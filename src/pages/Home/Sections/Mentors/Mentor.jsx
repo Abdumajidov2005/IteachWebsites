@@ -1,18 +1,10 @@
 import { useEffect, useState } from "react";
-import { Award, Send, Sparkles } from "lucide-react";
+import { Award, Send, Sparkles, User } from "lucide-react";
 import { LiaLinkedin } from "react-icons/lia";
 import { db } from "../../../../firebase";
 import { collection, onSnapshot } from "firebase/firestore";
 
 const ICONS = [Award, Sparkles];
-const DEFAULT_IMAGES = [
-  "/imgs/a.png",
-  "/imgs/a1.png",
-  "/imgs/а2.png",
-  "/imgs/а3.png",
-  "/imgs/а4.png",
-  "/imgs/а5.png",
-];
 
 function Mentor() {
   const [mentors, setMentors] = useState([]);
@@ -52,7 +44,7 @@ function Mentor() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {mentors.map((mentor, index) => {
               const Icon = ICONS[index % ICONS.length];
-              const image = DEFAULT_IMAGES[index % DEFAULT_IMAGES.length];
+              const image = mentor.image || mentor.photo;
 
               return (
                 <div
@@ -60,12 +52,19 @@ function Mentor() {
                   className="group relative bg-slate-50/80 rounded-3xl p-8 border border-slate-200/80 shadow-sm hover:shadow-2xl hover:shadow-emerald-500/10 hover:border-emerald-500/40 hover:-translate-y-2 hover:bg-white transition-all duration-300 flex flex-col items-center text-center"
                 >
                   <div className="relative mb-6">
-                    <div className="w-28 h-28 rounded-full overflow-hidden ring-4 ring-emerald-500/20 group-hover:ring-emerald-500 transition-all duration-300 shadow-md">
-                      <img
-                        src={image}
-                        alt={mentor.name}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                      />
+                    <div className="w-28 h-28 rounded-full overflow-hidden ring-4 ring-emerald-500/20 group-hover:ring-emerald-500 transition-all duration-300 shadow-md bg-white flex items-center justify-center">
+                      {image ? (
+                        <img
+                          src={image}
+                          alt={mentor.name}
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                        />
+                      ) : (
+                        <User
+                          className="w-16 h-16 text-slate-800"
+                          strokeWidth={1.5}
+                        />
+                      )}
                     </div>
                     <span className="absolute bottom-0 right-0 bg-emerald-500 text-white p-2 rounded-full shadow-lg group-hover:scale-110 transition-transform">
                       <Icon className="w-4 h-4" />

@@ -68,16 +68,6 @@ function Navbar({ onLogout }) {
 
           <li>
             <a
-              href="#directions"
-              className="group relative py-2 text-[14px] font-medium text-[#59636b] transition-colors duration-300 hover:text-[#16a34a]"
-            >
-              Yo'nalishlar
-              <span className="absolute bottom-0 left-1/2 h-[2px] w-0 -translate-x-1/2 rounded-full bg-[#16a34a] shadow-[0_0_8px_rgba(22,163,74,0.5)] transition-all duration-300 group-hover:w-full" />
-            </a>
-          </li>
-
-          <li>
-            <a
               href="#results"
               className="group relative py-2 text-[14px] font-medium text-[#59636b] transition-colors duration-300 hover:text-[#16a34a]"
             >
@@ -211,15 +201,6 @@ function Navbar({ onLogout }) {
               className="group relative rounded-xl px-4 py-3 text-base font-medium text-[#59636b] transition-all duration-300 hover:bg-[#f0fdf4] hover:text-[#16a34a]"
             >
               Kurslar
-              <span className="absolute bottom-1 left-4 h-[2px] w-0 rounded-full bg-[#16a34a] transition-all duration-300 group-hover:w-8" />
-            </a>
-
-            <a
-              href="#directions"
-              onClick={closeMenu}
-              className="group relative rounded-xl px-4 py-3 text-base font-medium text-[#59636b] transition-all duration-300 hover:bg-[#f0fdf4] hover:text-[#16a34a]"
-            >
-              Yo'nalishlar
               <span className="absolute bottom-1 left-4 h-[2px] w-0 rounded-full bg-[#16a34a] transition-all duration-300 group-hover:w-8" />
             </a>
 

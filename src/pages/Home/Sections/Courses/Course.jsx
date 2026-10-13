@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ArrowRight, Code2, Megaphone, Brain, Boxes } from "lucide-react";
+import { ArrowRight, Code2, Megaphone, Brain, Boxes, X } from "lucide-react";
 import { db } from "../../../../firebase";
 import { collection, onSnapshot } from "firebase/firestore";
 
@@ -46,7 +46,14 @@ function getCourseVisual(title = "") {
   return match || DEFAULT_VISUAL;
 }
 
-function CourseCard({ course, index }) {
+function scrollToSignup() {
+  const target = document.getElementById("blog");
+  if (target) {
+    target.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+}
+
+function CourseCard({ course, index, onDetails }) {
   const { icon: Icon, image } = getCourseVisual(course.title);
 
   return (
@@ -77,11 +84,6 @@ function CourseCard({ course, index }) {
 
         <div className="mt-2.5 space-y-1 text-[9px] leading-[1.4] text-[#78837f]">
           <p className="text-[15px]">
-            O'quvchilar:{" "}
-            <span className="font-semibold text-[#39443f]">
-              {course.students || 0}
-            </span>
-            <span className="mx-2 text-[#d5dcd8]">•</span>
             Holat:{" "}
             <span className="font-semibold text-[#39443f]">
               {course.status || "Faol"}
@@ -99,6 +101,7 @@ function CourseCard({ course, index }) {
         <div className="mt-3 flex gap-1.5">
           <button
             type="button"
+            onClick={() => onDetails(course)}
             className="flex-1 rounded-[7px] bg-[#e6f7ed] py-2 text-[13px] font-bold text-[#16a34a] transition-all duration-300 hover:bg-[#d2f1df] hover:-translate-y-[1px] cursor-pointer"
           >
             Batafsil ma'lumot
@@ -106,6 +109,7 @@ function CourseCard({ course, index }) {
 
           <button
             type="button"
+            onClick={scrollToSignup}
             className="group/button flex-1 rounded-[7px] bg-[#16a34a] py-2 text-[13px] font-bold text-white transition-all duration-300 hover:bg-[#15803d] hover:-translate-y-[1px] hover:shadow-[0_7px_16px_rgba(22,163,74,0.25)] cursor-pointer"
           >
             <span className="inline-flex items-center justify-center gap-1">
@@ -122,10 +126,97 @@ function CourseCard({ course, index }) {
   );
 }
 
+function CourseModal({ course, onClose }) {
+  const { icon: Icon, image } = getCourseVisual(course.title);
+
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  return (
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        className="relative w-full max-w-[480px] overflow-hidden rounded-[18px] bg-white shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+        style={{ animation: "courseIn 300ms ease-out both" }}
+      >
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Yopish"
+          className="absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-[#111827] shadow-md transition-colors hover:bg-white cursor-pointer"
+        >
+          <X size={18} />
+        </button>
+
+        <div className="relative h-[190px] overflow-hidden bg-[#f0fdf4]">
+          <img
+            src={image}
+            alt={course.title}
+            className="h-full w-full object-cover"
+          />
+          <div className="absolute left-4 top-4 flex h-10 w-10 items-center justify-center rounded-[10px] bg-white/90 text-[#16a34a] shadow-md backdrop-blur-sm">
+            <Icon size={20} />
+          </div>
+        </div>
+
+        <div className="p-6">
+          <h3 className="text-[24px] font-extrabold leading-tight text-[#111827]">
+            {course.title}
+          </h3>
+
+          {course.description && (
+            <p className="mt-3 text-[14px] leading-relaxed text-[#59636b]">
+              {course.description}
+            </p>
+          )}
+
+          <div className="mt-5 space-y-2.5 text-[14px]">
+            <div className="flex items-center justify-between border-b border-[#eef2f0] pb-2.5">
+              <span className="text-[#8a9490]">Mentor</span>
+              <span className="font-semibold text-[#39443f]">
+                {course.mentor || "—"}
+              </span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-[#8a9490]">Holat</span>
+              <span className="font-semibold text-[#39443f]">
+                {course.status || "Faol"}
+              </span>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => {
+              onClose();
+              scrollToSignup();
+            }}
+            className="group/button mt-6 flex w-full items-center justify-center gap-1.5 rounded-[10px] bg-[#16a34a] py-3 text-[15px] font-bold text-white transition-all duration-300 hover:bg-[#15803d] hover:shadow-[0_7px_16px_rgba(22,163,74,0.25)] cursor-pointer"
+          >
+            Kursga yozilish
+            <ArrowRight
+              size={16}
+              className="transition-transform duration-300 group-hover/button:translate-x-0.5"
+            />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function Course() {
   const [courses, setCourses] = useState([]);
   const [visibleCount, setVisibleCount] = useState(6);
-  const [active, setActive] = useState(0);
+  const [selectedCourse, setSelectedCourse] = useState(null);
 
   useEffect(() => {
     const unsub = onSnapshot(collection(db, "courses"), (snap) => {
@@ -134,16 +225,6 @@ function Course() {
 
     return () => unsub();
   }, []);
-
-  useEffect(() => {
-    if (courses.length === 0) return;
-
-    const timer = setInterval(() => {
-      setActive((prev) => (prev + 1) % courses.length);
-    }, 3500);
-
-    return () => clearInterval(timer);
-  }, [courses.length]);
 
   const visibleCourses = courses.slice(0, visibleCount);
 
@@ -190,22 +271,11 @@ function Course() {
           <>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {visibleCourses.map((course, index) => (
-                <CourseCard key={course.id} course={course} index={index} />
-              ))}
-            </div>
-
-            <div className="mt-7 flex items-center justify-center gap-2">
-              {courses.map((course, index) => (
-                <button
+                <CourseCard
                   key={course.id}
-                  type="button"
-                  onClick={() => setActive(index)}
-                  aria-label={course.title}
-                  className={`h-1.5 rounded-full transition-all duration-500 ${
-                    index === active
-                      ? "w-7 bg-[#16a34a]"
-                      : "w-1.5 bg-[#cfd8d3] hover:bg-[#8ed3a7]"
-                  }`}
+                  course={course}
+                  index={index}
+                  onDetails={setSelectedCourse}
                 />
               ))}
             </div>
@@ -230,6 +300,13 @@ function Course() {
           </>
         )}
       </div>
+
+      {selectedCourse && (
+        <CourseModal
+          course={selectedCourse}
+          onClose={() => setSelectedCourse(null)}
+        />
+      )}
     </section>
   );
 }
