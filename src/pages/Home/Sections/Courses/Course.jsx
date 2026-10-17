@@ -1,7 +1,13 @@
 import { useEffect, useState } from "react";
 import { ArrowRight, Code2, Megaphone, Brain, Boxes, X } from "lucide-react";
-import { db } from "../../../../firebase";
-import { collection, onSnapshot } from "firebase/firestore";
+import { api, API_BASE_URL } from "../../../../api";
+
+// API nisbiy media yo'l qaytarsa, to'liq URL ga aylantiradi.
+function resolveImage(url) {
+  if (!url) return null;
+  if (url.startsWith("http://") || url.startsWith("https://")) return url;
+  return `${API_BASE_URL}${url.startsWith("/") ? "" : "/"}${url}`;
+}
 
 const COURSE_VISUALS = [
   {
@@ -54,7 +60,9 @@ function scrollToSignup() {
 }
 
 function CourseCard({ course, index, onDetails }) {
-  const { icon: Icon, image } = getCourseVisual(course.title);
+  const visual = getCourseVisual(course.title);
+  const Icon = visual.icon;
+  const image = resolveImage(course.image) || visual.image;
 
   return (
     <article
@@ -93,7 +101,7 @@ function CourseCard({ course, index, onDetails }) {
           <p className="text-[15px]">
             Mentor:{" "}
             <span className="font-semibold text-[#39443f]">
-              {course.mentor}
+              {courseMentorName(course)}
             </span>
           </p>
         </div>
@@ -126,8 +134,16 @@ function CourseCard({ course, index, onDetails }) {
   );
 }
 
+function courseMentorName(course) {
+  if (!course.mentor) return course.mentor_name || "—";
+  if (typeof course.mentor === "string") return course.mentor;
+  return course.mentor.name || course.mentor.full_name || "—";
+}
+
 function CourseModal({ course, onClose }) {
-  const { icon: Icon, image } = getCourseVisual(course.title);
+  const visual = getCourseVisual(course.title);
+  const Icon = visual.icon;
+  const image = resolveImage(course.image) || visual.image;
 
   useEffect(() => {
     const onKey = (e) => {
@@ -182,7 +198,7 @@ function CourseModal({ course, onClose }) {
             <div className="flex items-center justify-between border-b border-[#eef2f0] pb-2.5">
               <span className="text-[#8a9490]">Mentor</span>
               <span className="font-semibold text-[#39443f]">
-                {course.mentor || "—"}
+                {courseMentorName(course)}
               </span>
             </div>
             <div className="flex items-center justify-between">
@@ -219,11 +235,20 @@ function Course() {
   const [selectedCourse, setSelectedCourse] = useState(null);
 
   useEffect(() => {
-    const unsub = onSnapshot(collection(db, "courses"), (snap) => {
-      setCourses(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
-    });
+    let active = true;
 
-    return () => unsub();
+    api
+      .getCourses()
+      .then((data) => {
+        if (active) setCourses(data);
+      })
+      .catch((err) => {
+        console.error("Kurslarni yuklashda xatolik:", err);
+      });
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   const visibleCourses = courses.slice(0, visibleCount);

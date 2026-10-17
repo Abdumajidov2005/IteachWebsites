@@ -1,20 +1,34 @@
 import { useEffect, useState } from "react";
 import { Award, Send, Sparkles, User } from "lucide-react";
 import { LiaLinkedin } from "react-icons/lia";
-import { db } from "../../../../firebase";
-import { collection, onSnapshot } from "firebase/firestore";
+import { api, API_BASE_URL } from "../../../../api";
 
 const ICONS = [Award, Sparkles];
+
+function resolveImage(url) {
+  if (!url) return null;
+  if (url.startsWith("http://") || url.startsWith("https://")) return url;
+  return `${API_BASE_URL}${url.startsWith("/") ? "" : "/"}${url}`;
+}
 
 function Mentor() {
   const [mentors, setMentors] = useState([]);
 
   useEffect(() => {
-    const unsub = onSnapshot(collection(db, "mentors"), (snap) => {
-      setMentors(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
-    });
+    let active = true;
 
-    return () => unsub();
+    api
+      .getMentors()
+      .then((data) => {
+        if (active) setMentors(data);
+      })
+      .catch((err) => {
+        console.error("Mentorlarni yuklashda xatolik:", err);
+      });
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   return (
@@ -44,7 +58,10 @@ function Mentor() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {mentors.map((mentor, index) => {
               const Icon = ICONS[index % ICONS.length];
-              const image = mentor.image || mentor.photo;
+              const image = resolveImage(mentor.image || mentor.photo);
+              const name = mentor.name || mentor.full_name;
+              const field = mentor.field || mentor.speciality || mentor.position;
+              const bio = mentor.bio || mentor.about;
 
               return (
                 <div
@@ -56,7 +73,7 @@ function Mentor() {
                       {image ? (
                         <img
                           src={image}
-                          alt={mentor.name}
+                          alt={name}
                           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                         />
                       ) : (
@@ -72,26 +89,35 @@ function Mentor() {
                   </div>
 
                   <h3 className="text-xl font-bold text-slate-900 group-hover:text-emerald-600 transition-colors">
-                    {mentor.name}
+                    {name}
                   </h3>
 
                   <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full mt-2 mb-4 border border-emerald-500/20">
-                    {mentor.field}
+                    {field}
                   </span>
 
                   <p className="text-slate-600 text-sm leading-relaxed mb-6">
-                    Ko'p yillik amaliy tajribaga ega bo'lib, o'quvchilarga
-                    professional darslar o'tadi va real portfolio ustida
-                    ishlashni o'rgatadi.
+                    {bio ||
+                      "Ko'p yillik amaliy tajribaga ega bo'lib, o'quvchilarga professional darslar o'tadi va real portfolio ustida ishlashni o'rgatadi."}
                   </p>
 
                   <div className="mt-auto pt-4 border-t border-slate-200/60 w-full flex justify-center gap-3">
-                    <button className="p-2 rounded-xl bg-slate-100 text-slate-600 hover:bg-emerald-500 hover:text-white transition-colors">
+                    <a
+                      href={mentor.linkedin || "#"}
+                      target={mentor.linkedin ? "_blank" : undefined}
+                      rel="noopener noreferrer"
+                      className="p-2 rounded-xl bg-slate-100 text-slate-600 hover:bg-emerald-500 hover:text-white transition-colors"
+                    >
                       <LiaLinkedin className="w-4 h-4" />
-                    </button>
-                    <button className="p-2 rounded-xl bg-slate-100 text-slate-600 hover:bg-emerald-500 hover:text-white transition-colors">
+                    </a>
+                    <a
+                      href={mentor.telegram || "#"}
+                      target={mentor.telegram ? "_blank" : undefined}
+                      rel="noopener noreferrer"
+                      className="p-2 rounded-xl bg-slate-100 text-slate-600 hover:bg-emerald-500 hover:text-white transition-colors"
+                    >
                       <Send className="w-4 h-4" />
-                    </button>
+                    </a>
                   </div>
                 </div>
               );

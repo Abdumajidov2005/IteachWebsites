@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Plus } from "lucide-react";
+import { api } from "../../../../api";
 
-const faqData = [
+const fallbackFaq = [
   {
     q: "Iteach da qanday kurslar bor?",
     a: "Markazimizda dasturlash, dizayn, SMM & marketing va sun'iy intellekt (AI) yo'nalishlari bo'yicha kurslar mavjud.",
@@ -66,6 +67,30 @@ function FaqItem({ item, isOpen, onToggle }) {
 
 export default function Helps() {
   const [openIndex, setOpenIndex] = useState(0);
+  const [faqData, setFaqData] = useState(fallbackFaq);
+
+  useEffect(() => {
+    let active = true;
+
+    api
+      .getFaq()
+      .then((data) => {
+        if (!active || !data.length) return;
+        setFaqData(
+          data.map((item) => ({
+            q: item.question || item.q || "",
+            a: item.answer || item.a || "",
+          }))
+        );
+      })
+      .catch((err) => {
+        console.error("FAQ yuklashda xatolik:", err);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const toggle = (idx) => {
     setOpenIndex((prev) => (prev === idx ? -1 : idx));

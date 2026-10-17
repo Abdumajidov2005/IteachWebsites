@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Phone, Send, User, ChevronDown, Check, Code, Share2, Bot, Layers } from 'lucide-react';
+import { api } from '../../../../api';
 
 function Consultation() {
   const [isOpen, setIsOpen] = useState(false);
@@ -9,7 +10,36 @@ function Consultation() {
     icon: Code 
   });
 
+  const [fullName, setFullName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [status, setStatus] = useState(null); // 'success' | 'error' | null
+
   const dropdownRef = useRef(null);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (submitting) return;
+
+    setStatus(null);
+    setSubmitting(true);
+
+    try {
+      await api.apply({
+        full_name: fullName,
+        phone,
+        message: `Yo'nalish: ${selectedOption.label}`,
+      });
+      setStatus('success');
+      setFullName('');
+      setPhone('');
+    } catch (err) {
+      console.error('Ariza yuborishda xatolik:', err);
+      setStatus('error');
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   const options = [
     { id: 'dasturlash', label: 'Dasturlash', icon: Code },
@@ -71,7 +101,7 @@ function Consultation() {
               Ma'lumotlaringizni qoldiring
             </h3>
 
-            <form className="flex flex-col gap-5" onSubmit={(e) => e.preventDefault()}>
+            <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
               <div>
                 <label className="block text-sm font-semibold text-slate-700 mb-2">
                   Ismingiz
@@ -79,6 +109,9 @@ function Consultation() {
                 <div className="relative">
                   <input 
                     type="text" 
+                    required
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
                     placeholder="Masalan: Davron"
                     className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3.5 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all text-sm font-medium shadow-sm"
                   />
@@ -93,6 +126,9 @@ function Consultation() {
                 <div className="relative">
                   <input 
                     type="tel" 
+                    required
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
                     placeholder="+998 (__) ___-__-__"
                     className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3.5 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all text-sm font-medium shadow-sm"
                   />
@@ -154,11 +190,23 @@ function Consultation() {
 
               <button 
                 type="submit"
-                className="w-full mt-2 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-4 px-6 rounded-xl shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/35 transition-all duration-300 flex items-center justify-center gap-2 group cursor-pointer"
+                disabled={submitting}
+                className="w-full mt-2 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold py-4 px-6 rounded-xl shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/35 transition-all duration-300 flex items-center justify-center gap-2 group cursor-pointer"
               >
-                <span>Yuborish</span>
+                <span>{submitting ? 'Yuborilmoqda...' : 'Yuborish'}</span>
                 <Send className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </button>
+
+              {status === 'success' && (
+                <p className="text-sm font-semibold text-emerald-600 text-center">
+                  Arizangiz qabul qilindi! Tez orada siz bilan bog'lanamiz.
+                </p>
+              )}
+              {status === 'error' && (
+                <p className="text-sm font-semibold text-red-500 text-center">
+                  Xatolik yuz berdi. Iltimos, qayta urinib ko'ring.
+                </p>
+              )}
             </form>
           </div>
 
