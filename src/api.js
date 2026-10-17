@@ -48,8 +48,12 @@ export const api = {
   getResults: () => request("/api/results/").then(toList),
   getLearningProcess: () => request("/api/learning-process/").then(toList),
   getPartners: () => request("/api/partners/").then(toList),
+  getStatistics: () => request("/api/statistics/").then(toList),
+  getGraduates: () => request("/api/graduates/").then(toList),
   getTestimonials: () => request("/api/testimonials/").then(toList),
   getFaq: () => request("/api/faq/").then(toList),
+  getSettings: () => request("/api/settings/"),
+  getHero: () => request("/api/hero/"),
 
   // Formalar (POST)
   apply: (payload) =>

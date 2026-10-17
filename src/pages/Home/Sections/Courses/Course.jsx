@@ -59,8 +59,14 @@ function scrollToSignup() {
   }
 }
 
+// API "name", eski ma'lumot esa "title" ishlatishi mumkin.
+function courseTitle(course) {
+  return course.title || course.name || "";
+}
+
 function CourseCard({ course, index, onDetails }) {
-  const visual = getCourseVisual(course.title);
+  const title = courseTitle(course);
+  const visual = getCourseVisual(title);
   const Icon = visual.icon;
   const image = resolveImage(course.image) || visual.image;
 
@@ -74,7 +80,7 @@ function CourseCard({ course, index, onDetails }) {
       <div className="relative h-[155px] overflow-hidden rounded-[10px] bg-[#f0fdf4]">
         <img
           src={image}
-          alt={course.title}
+          alt={title}
           className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
         />
 
@@ -87,7 +93,7 @@ function CourseCard({ course, index, onDetails }) {
 
       <div className="px-1.5 pb-1 pt-3">
         <h3 className="min-h-[21px] text-[20px] font-bold leading-tight text-[#111827]">
-          {course.title}
+          {title}
         </h3>
 
         <div className="mt-2.5 space-y-1 text-[9px] leading-[1.4] text-[#78837f]">
@@ -141,7 +147,9 @@ function courseMentorName(course) {
 }
 
 function CourseModal({ course, onClose }) {
-  const visual = getCourseVisual(course.title);
+  const title = courseTitle(course);
+  const description = course.description || course.short_description;
+  const visual = getCourseVisual(title);
   const Icon = visual.icon;
   const image = resolveImage(course.image) || visual.image;
 
@@ -175,7 +183,7 @@ function CourseModal({ course, onClose }) {
         <div className="relative h-[190px] overflow-hidden bg-[#f0fdf4]">
           <img
             src={image}
-            alt={course.title}
+            alt={title}
             className="h-full w-full object-cover"
           />
           <div className="absolute left-4 top-4 flex h-10 w-10 items-center justify-center rounded-[10px] bg-white/90 text-[#16a34a] shadow-md backdrop-blur-sm">
@@ -185,12 +193,12 @@ function CourseModal({ course, onClose }) {
 
         <div className="p-6">
           <h3 className="text-[24px] font-extrabold leading-tight text-[#111827]">
-            {course.title}
+            {title}
           </h3>
 
-          {course.description && (
+          {description && (
             <p className="mt-3 text-[14px] leading-relaxed text-[#59636b]">
-              {course.description}
+              {description}
             </p>
           )}
 

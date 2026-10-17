@@ -1,32 +1,63 @@
+import { useState, useEffect } from 'react';
 import { UserCheck, BookOpen, Briefcase, Award } from 'lucide-react';
+import { api } from '../../../../api';
+
+const STEP_ICONS = [UserCheck, BookOpen, Briefcase, Award];
+
+const fallbackSteps = [
+  {
+    number: "01",
+    title: "Ro'yxatdan o'ting",
+    description: "O'zingiz qiziqqan yo'nalish bo'yicha bepul konsultatsiya so'rovini qoldiring.",
+    icon: UserCheck
+  },
+  {
+    number: "02",
+    title: "Darslarni boshlang",
+    description: "Haftada 3 kun, 2 soatdan maxsus sinfxonalarda tajribali mentorlar bilan darslar.",
+    icon: BookOpen
+  },
+  {
+    number: "03",
+    title: "Real loyihalar",
+    description: "Mentorlar yordamida o'z portfoliosingiz uchun real keyslarni ishlab chiqing.",
+    icon: Briefcase
+  },
+  {
+    number: "04",
+    title: "Sertifikat va Ish",
+    description: "Sertifikatga ega bo'ling va hamkor kompaniyalarimizda o'z faoliyatingizni boshlang.",
+    icon: Award
+  }
+];
 
 function Proccess() {
-  const steps = [
-    {
-      number: "01",
-      title: "Ro'yxatdan o'ting",
-      description: "O'zingiz qiziqqan yo'nalish bo'yicha bepul konsultatsiya so'rovini qoldiring.",
-      icon: UserCheck
-    },
-    {
-      number: "02",
-      title: "Darslarni boshlang",
-      description: "Haftada 3 kun, 2 soatdan maxsus sinfxonalarda tajribali mentorlar bilan darslar.",
-      icon: BookOpen
-    },
-    {
-      number: "03",
-      title: "Real loyihalar",
-      description: "Mentorlar yordamida o'z portfoliosingiz uchun real keyslarni ishlab chiqing.",
-      icon: Briefcase
-    },
-    {
-      number: "04",
-      title: "Sertifikat va Ish",
-      description: "Sertifikatga ega bo'ling va hamkor kompaniyalarimizda o'z faoliyatingizni boshlang.",
-      icon: Award
-    }
-  ];
+  const [steps, setSteps] = useState(fallbackSteps);
+
+  useEffect(() => {
+    let active = true;
+
+    api
+      .getLearningProcess()
+      .then((data) => {
+        if (!active || !data.length) return;
+        setSteps(
+          data.map((item, i) => ({
+            number: item.number || item.step_number || String(i + 1).padStart(2, "0"),
+            title: item.title || "",
+            description: item.description || "",
+            icon: STEP_ICONS[i % STEP_ICONS.length],
+          }))
+        );
+      })
+      .catch((err) => {
+        console.error("O'quv jarayonini yuklashda xatolik:", err);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   return (
     <section  className="bg-white text-slate-900 py-20 px-4 transition-all duration-300">

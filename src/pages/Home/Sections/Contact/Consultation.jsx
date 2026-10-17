@@ -1,6 +1,26 @@
 import { useState, useRef, useEffect } from 'react';
 import { Phone, Send, User, ChevronDown, Check, Code, Share2, Bot, Layers } from 'lucide-react';
+import { toast } from 'sonner';
 import { api } from '../../../../api';
+
+// Kiritilgan matndan O'zbekiston raqamining 9 ta raqamini ajratadi.
+function extractUzDigits(value) {
+  let digits = value.replace(/\D/g, '');
+  if (digits.startsWith('998')) digits = digits.slice(3);
+  return digits.slice(0, 9); // operator kodi (2) + raqam (7)
+}
+
+// Raqamlar asosida mask hosil qiladi: +998 (90) 123-45-67
+// Ajratuvchilar (probel, qavs, chiziqcha) faqat keyingi raqam mavjud bo'lsa qo'shiladi,
+// shunda backspace har doim raqamni o'chira oladi.
+function formatUzPhone(digits) {
+  let out = '+998';
+  if (digits.length > 0) out += ' (' + digits.slice(0, 2);
+  if (digits.length > 2) out += ') ' + digits.slice(2, 5);
+  if (digits.length > 5) out += '-' + digits.slice(5, 7);
+  if (digits.length > 7) out += '-' + digits.slice(7, 9);
+  return out;
+}
 
 function Consultation() {
   const [isOpen, setIsOpen] = useState(false);
@@ -13,7 +33,6 @@ function Consultation() {
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [status, setStatus] = useState(null); // 'success' | 'error' | null
 
   const dropdownRef = useRef(null);
 
@@ -21,24 +40,59 @@ function Consultation() {
     e.preventDefault();
     if (submitting) return;
 
-    setStatus(null);
+    // Oddiy validatsiya
+    const digits = phone.replace(/\D/g, '');
+    if (!fullName.trim()) {
+      toast.error('Iltimos, ismingizni kiriting.');
+      return;
+    }
+    if (digits.length < 12) {
+      toast.error("Telefon raqamini to'liq kiriting.");
+      return;
+    }
+
     setSubmitting(true);
+
+    // API ga toza raqam yuboramiz: +998901234567
+    const cleanPhone = '+' + digits;
 
     try {
       await api.apply({
         full_name: fullName,
-        phone,
-        message: `Yo'nalish: ${selectedOption.label}`,
+        phone: cleanPhone,
+        direction: selectedOption.label,
       });
-      setStatus('success');
+      toast.success('Arizangiz qabul qilindi!', {
+        description: "Tez orada mutaxassislarimiz siz bilan bog'lanadi.",
+      });
       setFullName('');
       setPhone('');
     } catch (err) {
       console.error('Ariza yuborishda xatolik:', err);
-      setStatus('error');
+      toast.error('Xatolik yuz berdi', {
+        description: "Iltimos, birozdan so'ng qayta urinib ko'ring.",
+      });
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const handlePhoneChange = (e) => {
+    const raw = e.target.value;
+    let digits = extractUzDigits(raw);
+
+    // Foydalanuvchi o'chirayotgan bo'lsa (yangi qiymat qisqargan) va oxirida
+    // ajratuvchi turgan bo'lsa, oxirgi raqamni ham olib tashlaymiz — shunda
+    // backspace tiqilib qolmaydi.
+    if (raw.length < phone.length && /\D$/.test(raw)) {
+      digits = digits.slice(0, -1);
+    }
+
+    setPhone(digits ? formatUzPhone(digits) : '');
+  };
+
+  const handlePhoneFocus = () => {
+    if (!phone) setPhone('+998 ');
   };
 
   const options = [
@@ -128,7 +182,10 @@ function Consultation() {
                     type="tel" 
                     required
                     value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
+                    onChange={handlePhoneChange}
+                    onFocus={handlePhoneFocus}
+                    inputMode="numeric"
+                    maxLength={19}
                     placeholder="+998 (__) ___-__-__"
                     className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3.5 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all text-sm font-medium shadow-sm"
                   />
@@ -197,16 +254,6 @@ function Consultation() {
                 <Send className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </button>
 
-              {status === 'success' && (
-                <p className="text-sm font-semibold text-emerald-600 text-center">
-                  Arizangiz qabul qilindi! Tez orada siz bilan bog'lanamiz.
-                </p>
-              )}
-              {status === 'error' && (
-                <p className="text-sm font-semibold text-red-500 text-center">
-                  Xatolik yuz berdi. Iltimos, qayta urinib ko'ring.
-                </p>
-              )}
             </form>
           </div>
 

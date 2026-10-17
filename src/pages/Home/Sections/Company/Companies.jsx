@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   ChevronLeft,
   ChevronRight,
@@ -7,9 +7,71 @@ import {
   Users,
   ArrowUpRight,
 } from "lucide-react";
+import { api, API_BASE_URL } from "../../../../api";
+
+function resolveLogo(url) {
+  if (!url) return null;
+  if (url.startsWith("http://") || url.startsWith("https://")) return url;
+  return `${API_BASE_URL}${url.startsWith("/") ? "" : "/"}${url}`;
+}
+
+// API bo'sh bo'lsa ko'rsatiladigan standart logotiplar
+const fallbackPartners = [
+  { id: "f1", name: "", logo: "/imgs/logo1.png", website: "" },
+  { id: "f2", name: "", logo: "/imgs/logo2.png", website: "" },
+  { id: "f3", name: "", logo: "/imgs/logo3.png", website: "" },
+  { id: "f4", name: "", logo: "/imgs/logo4.png", website: "" },
+  { id: "f5", name: "", logo: "/imgs/logo2.png", website: "" },
+  { id: "f6", name: "", logo: "/imgs/logo3.png", website: "" },
+  { id: "f7", name: "", logo: "/imgs/logo4.png", website: "" },
+  { id: "f8", name: "", logo: "/imgs/logo1.png", website: "" },
+];
+
+function PartnerCard({ partner }) {
+  const logo = resolveLogo(partner.logo);
+  const Wrapper = partner.website ? "a" : "div";
+  const linkProps = partner.website
+    ? { href: partner.website, target: "_blank", rel: "noopener noreferrer" }
+    : {};
+
+  return (
+    <Wrapper
+      {...linkProps}
+      className="group relative bg-white border border-slate-200 rounded-2xl p-5 flex items-center justify-center gap-3 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl hover:border-slate-900 cursor-pointer overflow-hidden"
+    >
+      <span className="font-bold text-slate-900 w-30 tracking-tight group-hover:text-blue-600 transition-colors">
+        {logo ? (
+          <img src={logo} className="object-contain" alt={partner.name || ""} />
+        ) : (
+          partner.name
+        )}
+      </span>
+      <ArrowUpRight className="w-4 h-4 text-slate-400 opacity-0 group-hover:opacity-100 transition-all absolute top-2 right-2" />
+    </Wrapper>
+  );
+}
 
 function Companies() {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [partners, setPartners] = useState(fallbackPartners);
+
+  useEffect(() => {
+    let active = true;
+
+    api
+      .getPartners()
+      .then((data) => {
+        if (!active || !data.length) return;
+        setPartners(data);
+      })
+      .catch((err) => {
+        console.error("Hamkorlarni yuklashda xatolik:", err);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const nextSlide = () => {
     setCurrentSlide((prev) => (prev === 2 ? 0 : prev + 1));
@@ -185,99 +247,10 @@ function Companies() {
           </div>
 
           <div className="space-y-10">
-            {}
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                <div className="group relative bg-white border border-slate-200 rounded-2xl p-5 flex items-center justify-center gap-3 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl hover:border-slate-900 cursor-pointer overflow-hidden">
-                  <span className="font-bold text-slate-900 w-30 tracking-tight group-hover:text-blue-600 transition-colors">
-                    <img
-                      src="/imgs/logo1.png"
-                      className=" object-contain"
-                      alt=""
-                    />
-                  </span>
-                  <ArrowUpRight className="w-4 h-4 text-slate-400 opacity-0 group-hover:opacity-100 transition-all absolute top-2 right-2" />
-                </div>
-
-                <div className="group relative bg-white border border-slate-200 rounded-2xl p-5 flex items-center justify-center gap-3 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl hover:border-slate-900 cursor-pointer overflow-hidden">
-                  <span className="font-bold text-slate-900 w-30 tracking-tight group-hover:text-blue-600 transition-colors">
-                    <img
-                      src="/imgs/logo2.png"
-                      className=" object-contain"
-                      alt=""
-                    />
-                  </span>
-                  <ArrowUpRight className="w-4 h-4 text-slate-400 opacity-0 group-hover:opacity-100 transition-all absolute top-2 right-2" />
-                </div>
-
-                <div className="group relative bg-white border border-slate-200 rounded-2xl p-5 flex items-center justify-center gap-3 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl hover:border-slate-900 cursor-pointer overflow-hidden">
-                  <span className="font-bold text-slate-900 w-20 tracking-tight group-hover:text-blue-600 transition-colors">
-                    <img
-                      src="/imgs/logo3.png"
-                      className=" object-contain"
-                      alt=""
-                    />
-                  </span>
-                  <ArrowUpRight className="w-4 h-4 text-slate-400 opacity-0 group-hover:opacity-100 transition-all absolute top-2 right-2" />
-                </div>
-
-                <div className="group relative bg-white border border-slate-200 rounded-2xl p-5 flex items-center justify-center gap-3 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl hover:border-slate-900 cursor-pointer overflow-hidden">
-                  <span className="font-bold text-slate-900 w-30 tracking-tight group-hover:text-blue-600 transition-colors">
-                    <img
-                      src="/imgs/logo4.png"
-                      className=" object-contain"
-                      alt=""
-                    />
-                  </span>
-                  <ArrowUpRight className="w-4 h-4 text-slate-400 opacity-0 group-hover:opacity-100 transition-all absolute top-2 right-2" />
-                </div>
-              </div>
-            </div>
-
-            {}
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                <div className="group relative bg-white border border-slate-200 rounded-2xl p-5 flex items-center justify-center gap-3 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl hover:border-slate-900 cursor-pointer overflow-hidden">
-                  <span className="font-bold text-slate-900 w-30 tracking-tight group-hover:text-blue-600 transition-colors">
-                    <img
-                      src="/imgs/logo2.png"
-                      className=" object-contain"
-                      alt=""
-                    />
-                  </span>
-                  <ArrowUpRight className="w-4 h-4 text-slate-400 opacity-0 group-hover:opacity-100 transition-all absolute top-2 right-2" />
-                </div>
-
-                <div className="group relative bg-white border border-slate-200 rounded-2xl p-5 flex items-center justify-center gap-3 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl hover:border-slate-900 cursor-pointer overflow-hidden">
-                  <span className="font-bold text-slate-900 w-20 tracking-tight group-hover:text-blue-600 transition-colors">
-                    <img
-                      src="/imgs/logo3.png"
-                      className=" object-contain"
-                      alt=""
-                    />
-                  </span>{" "}
-                  <ArrowUpRight className="w-4 h-4 text-slate-400 opacity-0 group-hover:opacity-100 transition-all absolute top-2 right-2" />
-                </div>
-
-                <div className="group relative bg-white border border-slate-200 rounded-2xl p-5 flex items-center justify-center gap-3 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl hover:border-slate-900 cursor-pointer overflow-hidden">
-                  <span className="font-bold text-slate-900 w-30 tracking-tight group-hover:text-blue-600 transition-colors">
-                    <img
-                      src="/imgs/logo4.png"
-                      className=" object-contain"
-                      alt=""
-                    />
-                  </span>
-                  <ArrowUpRight className="w-4 h-4 text-slate-400 opacity-0 group-hover:opacity-100 transition-all absolute top-2 right-2" />
-                </div>
-
-                <div className="group relative bg-white border border-slate-200 rounded-2xl p-5 flex items-center justify-center gap-3 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl hover:border-slate-900 cursor-pointer overflow-hidden">
-
-                 <span className="font-bold text-slate-900 w-30 tracking-tight group-hover:text-blue-600 transition-colors">
-                    <img src="/imgs/logo1.png" className=" object-contain" alt="" />
-                  </span>
-                  <ArrowUpRight className="w-4 h-4 text-slate-400 opacity-0 group-hover:opacity-100 transition-all absolute top-2 right-2" />
-                </div>
-              </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              {partners.map((partner) => (
+                <PartnerCard key={partner.id} partner={partner} />
+              ))}
             </div>
           </div>
         </div>

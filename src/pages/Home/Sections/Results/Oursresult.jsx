@@ -1,5 +1,12 @@
 import { useRef, useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight, Play } from "lucide-react";
+import { api, API_BASE_URL } from "../../../../api";
+
+function resolveMedia(url) {
+  if (!url) return null;
+  if (url.startsWith("http://") || url.startsWith("https://")) return url;
+  return `${API_BASE_URL}${url.startsWith("/") ? "" : "/"}${url}`;
+}
 
 function InstagramIcon({ size = 18 }) {
   return (
@@ -20,12 +27,12 @@ function InstagramIcon({ size = 18 }) {
   );
 }
 
-const videos = [
+const fallbackVideos = [
   {
     id: 1,
     name: "Najot Ta'lim",
-    src: "/imgs/Eldor.mp4", // <-- shu yerga haqiqiy video faylning (.mp4) manzilini qo'ying
-    instagramUrl: "", // <-- shu yerga Instagram video (Reels) linkini qo'ying
+    src: "/imgs/Eldor.mp4",
+    instagramUrl: "",
   },
   {
     id: 2,
@@ -145,16 +152,18 @@ function VideoCard({ video, isPlaying, onPlay }) {
         </>
       )}
 
-      <a
-        href={video.instagramUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        onClick={(e) => e.stopPropagation()}
-        aria-label={`${video.name} - Instagram`}
-        className="absolute right-3 bottom-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-black/35 text-white shadow-lg backdrop-blur-md transition-all duration-300 hover:scale-110 hover:bg-[#16a34a]"
-      >
-        <InstagramIcon size={17} />
-      </a>
+      {video.instagramUrl && (
+        <a
+          href={video.instagramUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={(e) => e.stopPropagation()}
+          aria-label={`${video.name} - Instagram`}
+          className="absolute right-3 bottom-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-black/35 text-white shadow-lg backdrop-blur-md transition-all duration-300 hover:scale-110 hover:bg-[#16a34a]"
+        >
+          <InstagramIcon size={17} />
+        </a>
+      )}
     </div>
   );
 }
@@ -162,6 +171,34 @@ function VideoCard({ video, isPlaying, onPlay }) {
 export default function Oursresult() {
   const scrollerRef = useRef(null);
   const [playingId, setPlayingId] = useState(null);
+  const [videos, setVideos] = useState(fallbackVideos);
+
+  useEffect(() => {
+    let active = true;
+
+    api
+      .getResults()
+      .then((data) => {
+        if (!active || !data.length) return;
+        setVideos(
+          data.map((item, i) => ({
+            id: item.id ?? i,
+            name: item.name || "",
+            tag: item.tag || "",
+            src: resolveMedia(item.video_file || item.src || item.video_url),
+            thumb: resolveMedia(item.thumbnail),
+            instagramUrl: item.instagram_url || "",
+          }))
+        );
+      })
+      .catch((err) => {
+        console.error("Natijalarni yuklashda xatolik:", err);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const scrollByCard = (dir) => {
     const el = scrollerRef.current;
