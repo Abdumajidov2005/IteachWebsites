@@ -83,8 +83,8 @@ function Companies() {
 
   return (
     <div
-      id="results"
-      className="min-h-screen bg-slate-50 py-12 px-4 sm:px-6 font-sans text-slate-900"
+      id="about"
+      className="min-h-screen bg-slate-50 py-12 px-4 sm:px-6 font-sans text-slate-900 scroll-mt-24"
     >
       {}
       <div className="mx-auto max-w-[1200px] bg-white rounded-3xl p-6 sm:p-10 md:p-12 shadow-xl border border-slate-100">

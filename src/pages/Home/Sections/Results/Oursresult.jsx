@@ -83,7 +83,6 @@ function VideoCard({ video, isPlaying, onPlay }) {
 
   return (
     <div
-      id="about"
       className="group relative aspect-[9/16] w-[230px] flex-none overflow-hidden rounded-2xl bg-[#0a1522] shadow-sm sm:w-[220px]"
     >
       <video
@@ -208,7 +207,10 @@ export default function Oursresult() {
   };
 
   return (
-    <section className="mx-auto max-w-[1200px] px-6 py-16 lg:px-5">
+    <section
+      id="results"
+      className="mx-auto max-w-[1200px] px-6 py-16 lg:px-5 scroll-mt-24"
+    >
       <div className="mb-6 flex items-center justify-between">
         <h2 className="font-sora text-[26px] font-extrabold uppercase tracking-tight text-[#0a1522] lg:text-[32px]">
           O'quvchilarimiz natijalari
