@@ -9,11 +9,31 @@ import {
   LogOut,
 } from "lucide-react";
 
+const NAV_LINKS = [
+  { href: "#courses", id: "courses", label: "Kurslar" },
+  { href: "#results", id: "results", label: "Natijalar" },
+  { href: "#mentors", id: "mentors", label: "Mentorlar" },
+  { href: "#about", id: "about", label: "Biz haqimizda" },
+  { href: "#Savolar", id: "Savolar", label: "Savollar" },
+  { href: "#blog", id: "blog", label: "Blog" },
+];
+
 function Navbar({ onLogout }) {
   const [open, setOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState(() => {
+    if (typeof window !== "undefined" && window.location.hash) {
+      const hashId = window.location.hash.replace("#", "");
+      if (NAV_LINKS.some((l) => l.id === hashId)) {
+        return hashId;
+      }
+    }
+    return "";
+  });
 
   const profileRef = useRef(null);
+  const isClickScrolling = useRef(false);
+  const scrollTimeoutRef = useRef(null);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -36,6 +56,98 @@ function Navbar({ onLogout }) {
     setOpen(false);
   };
 
+  const handleLinkClick = (e, targetId) => {
+    e.preventDefault();
+    setActiveSection(targetId);
+    isClickScrolling.current = true;
+
+    if (scrollTimeoutRef.current) {
+      clearTimeout(scrollTimeoutRef.current);
+    }
+
+    if (window.history.pushState) {
+      window.history.pushState(null, "", `#${targetId}`);
+    }
+
+    const element = document.getElementById(targetId);
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth" });
+    }
+
+    scrollTimeoutRef.current = setTimeout(() => {
+      isClickScrolling.current = false;
+    }, 900);
+
+    setOpen(false);
+  };
+
+  const handleLogoClick = (e) => {
+    e.preventDefault();
+    setActiveSection("");
+    if (window.history.pushState) {
+      window.history.pushState(null, "", window.location.pathname);
+    }
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    setOpen(false);
+  };
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (isClickScrolling.current) return;
+
+      // Bottom of page check
+      if (
+        window.innerHeight + window.scrollY >=
+        document.documentElement.scrollHeight - 60
+      ) {
+        setActiveSection(NAV_LINKS[NAV_LINKS.length - 1].id);
+        return;
+      }
+
+      // Very top of page (Hero section)
+      if (window.scrollY < 120) {
+        setActiveSection("");
+        return;
+      }
+
+      const offset = 140;
+      let currentActive = "";
+
+      for (const item of NAV_LINKS) {
+        const el = document.getElementById(item.id);
+        if (el) {
+          const rect = el.getBoundingClientRect();
+          if (rect.top <= offset && rect.bottom > offset) {
+            currentActive = item.id;
+            break;
+          }
+        }
+      }
+
+      if (currentActive) {
+        setActiveSection(currentActive);
+      }
+    };
+
+    const handleHashChange = () => {
+      const hashId = window.location.hash.replace("#", "");
+      if (NAV_LINKS.some((l) => l.id === hashId)) {
+        setActiveSection(hashId);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener("hashchange", handleHashChange);
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("hashchange", handleHashChange);
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+    };
+  }, []);
+
   return (
     <header className="sticky top-0 z-50 w-full px-4 pt-4">
       <nav className="mx-auto flex h-[70px] max-w-[1200px] items-center justify-between rounded-[22px] border border-[#edf1ef] bg-white/95 px-6 shadow-[0_8px_30px_rgba(0,0,0,0.06)] backdrop-blur-md">
@@ -43,7 +155,7 @@ function Navbar({ onLogout }) {
         {/* LOGO */}
         <a
           href="#"
-          onClick={closeMenu}
+          onClick={handleLogoClick}
           className="flex shrink-0 items-center transition-opacity duration-300 hover:opacity-80"
         >
           <img
@@ -55,67 +167,31 @@ function Navbar({ onLogout }) {
 
         {/* DESKTOP NAV */}
         <ul className="hidden items-center gap-7 lg:flex xl:gap-8">
-
-          <li>
-            <a
-              href="#courses"
-              className="group relative py-2 text-[14px] font-medium text-[#59636b] transition-colors duration-300 hover:text-[#16a34a]"
-            >
-              Kurslar
-              <span className="absolute bottom-0 left-1/2 h-[2px] w-0 -translate-x-1/2 rounded-full bg-[#16a34a] shadow-[0_0_8px_rgba(22,163,74,0.5)] transition-all duration-300 group-hover:w-full" />
-            </a>
-          </li>
-
-          <li>
-            <a
-              href="#results"
-              className="group relative py-2 text-[14px] font-medium text-[#59636b] transition-colors duration-300 hover:text-[#16a34a]"
-            >
-              Natijalar
-              <span className="absolute bottom-0 left-1/2 h-[2px] w-0 -translate-x-1/2 rounded-full bg-[#16a34a] shadow-[0_0_8px_rgba(22,163,74,0.5)] transition-all duration-300 group-hover:w-full" />
-            </a>
-          </li>
-
-          <li>
-            <a
-              href="#mentors"
-              className="group relative py-2 text-[14px] font-medium text-[#59636b] transition-colors duration-300 hover:text-[#16a34a]"
-            >
-              Mentorlar
-              <span className="absolute bottom-0 left-1/2 h-[2px] w-0 -translate-x-1/2 rounded-full bg-[#16a34a] shadow-[0_0_8px_rgba(22,163,74,0.5)] transition-all duration-300 group-hover:w-full" />
-            </a>
-          </li>
-
-          <li>
-            <a
-              href="#about"
-              className="group relative py-2 text-[14px] font-medium text-[#59636b] transition-colors duration-300 hover:text-[#16a34a]"
-            >
-              Biz haqimizda
-              <span className="absolute bottom-0 left-1/2 h-[2px] w-0 -translate-x-1/2 rounded-full bg-[#16a34a] shadow-[0_0_8px_rgba(22,163,74,0.5)] transition-all duration-300 group-hover:w-full" />
-            </a>
-          </li>
-
-          <li>
-            <a
-              href="#Savolar"
-              className="group relative py-2 text-[14px] font-medium text-[#59636b] transition-colors duration-300 hover:text-[#16a34a]"
-            >
-              Savollar
-              <span className="absolute bottom-0 left-1/2 h-[2px] w-0 -translate-x-1/2 rounded-full bg-[#16a34a] shadow-[0_0_8px_rgba(22,163,74,0.5)] transition-all duration-300 group-hover:w-full" />
-            </a>
-          </li>
-
-          <li>
-            <a
-              href="#blog"
-              className="group relative py-2 text-[14px] font-medium text-[#59636b] transition-colors duration-300 hover:text-[#16a34a]"
-            >
-              Blog
-              <span className="absolute bottom-0 left-1/2 h-[2px] w-0 -translate-x-1/2 rounded-full bg-[#16a34a] shadow-[0_0_8px_rgba(22,163,74,0.5)] transition-all duration-300 group-hover:w-full" />
-            </a>
-          </li>
-
+          {NAV_LINKS.map((link) => {
+            const isActive = activeSection === link.id;
+            return (
+              <li key={link.id}>
+                <a
+                  href={link.href}
+                  onClick={(e) => handleLinkClick(e, link.id)}
+                  className={`group relative py-2 text-[14px] transition-colors duration-300 ${
+                    isActive
+                      ? "font-semibold text-[#16a34a]"
+                      : "font-medium text-[#59636b] hover:text-[#16a34a]"
+                  }`}
+                >
+                  {link.label}
+                  <span
+                    className={`absolute bottom-0 left-1/2 h-[2.5px] -translate-x-1/2 rounded-full bg-[#16a34a] shadow-[0_0_8px_rgba(22,163,74,0.6)] transition-all duration-300 ${
+                      isActive
+                        ? "w-full opacity-100"
+                        : "w-0 opacity-0 group-hover:w-full group-hover:opacity-100"
+                    }`}
+                  />
+                </a>
+              </li>
+            );
+          })}
         </ul>
 
         {/* DESKTOP RIGHT */}
@@ -135,6 +211,7 @@ function Navbar({ onLogout }) {
 
           <a
             href="#courses"
+            onClick={(e) => handleLinkClick(e, "courses")}
             className="group flex items-center gap-3 rounded-full bg-[#16a34a] px-6 py-3 text-[14px] font-bold text-white shadow-[0_8px_20px_rgba(22,163,74,0.25)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#15803d] hover:shadow-[0_12px_28px_rgba(22,163,74,0.35)] active:translate-y-0"
           >
             Kursga yozilish
@@ -194,60 +271,30 @@ function Navbar({ onLogout }) {
         <div className="mx-auto mt-2 max-w-[1200px] rounded-[20px] border border-[#edf1ef] bg-white p-5 shadow-[0_10px_30px_rgba(0,0,0,0.08)] lg:hidden">
 
           <div className="flex flex-col gap-2">
-
-            <a
-              href="#courses"
-              onClick={closeMenu}
-              className="group relative rounded-xl px-4 py-3 text-base font-medium text-[#59636b] transition-all duration-300 hover:bg-[#f0fdf4] hover:text-[#16a34a]"
-            >
-              Kurslar
-              <span className="absolute bottom-1 left-4 h-[2px] w-0 rounded-full bg-[#16a34a] transition-all duration-300 group-hover:w-8" />
-            </a>
-
-            <a
-              href="#results"
-              onClick={closeMenu}
-              className="group relative rounded-xl px-4 py-3 text-base font-medium text-[#59636b] transition-all duration-300 hover:bg-[#f0fdf4] hover:text-[#16a34a]"
-            >
-              Natijalar
-              <span className="absolute bottom-1 left-4 h-[2px] w-0 rounded-full bg-[#16a34a] transition-all duration-300 group-hover:w-8" />
-            </a>
-
-            <a
-              href="#mentors"
-              onClick={closeMenu}
-              className="group relative rounded-xl px-4 py-3 text-base font-medium text-[#59636b] transition-all duration-300 hover:bg-[#f0fdf4] hover:text-[#16a34a]"
-            >
-              Mentorlar
-              <span className="absolute bottom-1 left-4 h-[2px] w-0 rounded-full bg-[#16a34a] transition-all duration-300 group-hover:w-8" />
-            </a>
-
-            <a
-              href="#about"
-              onClick={closeMenu}
-              className="group relative rounded-xl px-4 py-3 text-base font-medium text-[#59636b] transition-all duration-300 hover:bg-[#f0fdf4] hover:text-[#16a34a]"
-            >
-              Biz haqimizda
-              <span className="absolute bottom-1 left-4 h-[2px] w-0 rounded-full bg-[#16a34a] transition-all duration-300 group-hover:w-8" />
-            </a>
-
-            <a
-              href="#Savolar"
-              onClick={closeMenu}
-              className="group relative rounded-xl px-4 py-3 text-base font-medium text-[#59636b] transition-all duration-300 hover:bg-[#f0fdf4] hover:text-[#16a34a]"
-            >
-              Savollar
-              <span className="absolute bottom-1 left-4 h-[2px] w-0 rounded-full bg-[#16a34a] transition-all duration-300 group-hover:w-8" />
-            </a>
-
-            <a
-              href="#blog"
-              onClick={closeMenu}
-              className="group relative rounded-xl px-4 py-3 text-base font-medium text-[#59636b] transition-all duration-300 hover:bg-[#f0fdf4] hover:text-[#16a34a]"
-            >
-              Blog
-              <span className="absolute bottom-1 left-4 h-[2px] w-0 rounded-full bg-[#16a34a] transition-all duration-300 group-hover:w-8" />
-            </a>
+            {NAV_LINKS.map((link) => {
+              const isActive = activeSection === link.id;
+              return (
+                <a
+                  key={link.id}
+                  href={link.href}
+                  onClick={(e) => handleLinkClick(e, link.id)}
+                  className={`group relative rounded-xl px-4 py-3 text-base transition-all duration-300 ${
+                    isActive
+                      ? "bg-[#f0fdf4] font-semibold text-[#16a34a]"
+                      : "font-medium text-[#59636b] hover:bg-[#f0fdf4] hover:text-[#16a34a]"
+                  }`}
+                >
+                  {link.label}
+                  <span
+                    className={`absolute bottom-1 left-4 h-[2px] rounded-full bg-[#16a34a] transition-all duration-300 ${
+                      isActive
+                        ? "w-10 shadow-[0_0_8px_rgba(22,163,74,0.5)]"
+                        : "w-0 group-hover:w-10"
+                    }`}
+                  />
+                </a>
+              );
+            })}
 
             <div className="my-2 h-px bg-[#edf1ef]" />
 
@@ -268,7 +315,7 @@ function Navbar({ onLogout }) {
             {/* COURSE BUTTON */}
             <a
               href="#courses"
-              onClick={closeMenu}
+              onClick={(e) => handleLinkClick(e, "courses")}
               className="mt-2 flex items-center justify-center gap-2 rounded-xl bg-[#16a34a] py-3.5 text-base font-bold text-white shadow-[0_8px_20px_rgba(22,163,74,0.25)] transition-all duration-300 hover:bg-[#15803d] hover:shadow-[0_12px_28px_rgba(22,163,74,0.35)]"
             >
               Kursga yozilish

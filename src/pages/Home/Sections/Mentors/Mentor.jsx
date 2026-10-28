@@ -34,7 +34,7 @@ function Mentor() {
   return (
     <section
       id="mentors"
-      className="bg-white text-slate-900 py-20 px-4 transition-all duration-300"
+      className="bg-white text-slate-900 py-20 px-4 transition-all duration-300 scroll-mt-24"
     >
       <div className="max-w-[1200px] mx-auto">
         <div className="flex flex-col items-center text-center mb-16">

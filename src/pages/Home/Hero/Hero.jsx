@@ -35,6 +35,8 @@ const slides = [
   },
 ];
 
+/* Counter — statistika bloki bilan birga vaqtincha kommentariyaga olingan.
+   Statistikani qayta yoqsangiz, bu komponentni ham qayta oching.
 function Counter({ value, suffix = "" }) {
   const [count, setCount] = useState(0);
 
@@ -65,6 +67,7 @@ function Counter({ value, suffix = "" }) {
     </span>
   );
 }
+*/
 
 function HeroSlider() {
   const [active, setActive] = useState(0);
@@ -264,6 +267,7 @@ function Hero() {
             </a>
           </div>
 
+          {/* STATISTIKA (1000+ / 6+ / 95%) — vaqtincha kommentariyaga olingan
           <div
             className="hero-in flex max-w-[560px]"
             style={{ animationDelay: "0.32s" }}
@@ -293,6 +297,7 @@ function Hero() {
               </div>
             </div>
           </div>
+          */}
         </div>
 
         <div

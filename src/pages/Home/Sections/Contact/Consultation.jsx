@@ -116,7 +116,7 @@ function Consultation() {
   const SelectedIcon = selectedOption.icon;
 
   return (
-    <section id='blog' className="bg-white text-slate-900 py-20 px-4 transition-all duration-300">
+    <section id='blog' className="bg-white text-slate-900 py-20 px-4 transition-all duration-300 scroll-mt-24">
       <div className="max-w-[1200px] mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           

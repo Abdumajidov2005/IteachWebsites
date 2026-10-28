@@ -32,7 +32,6 @@ const fallbackFaq = [
 function FaqItem({ item, isOpen, onToggle }) {
   return (
     <div
-    id="Savolar"
       className="border-b border-[#eef1f0] last:border-b-0 transition-colors duration-300 hover:bg-[#f0fdf4]"
     >
       <button
@@ -97,7 +96,7 @@ export default function Helps() {
   };
 
   return (
-    <section className="mx-auto max-w-[1200px] px-6 py-22 lg:px-5">
+    <section id="Savolar" className="mx-auto max-w-[1200px] px-6 py-22 lg:px-5 scroll-mt-24">
       <h2 className="mb-11 font-sora text-[28px] font-extrabold uppercase leading-tight tracking-tight text-[#0a1522] lg:text-[34px]">
         Ko'p so'raladigan savollar
       </h2>

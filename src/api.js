@@ -14,7 +14,7 @@ async function request(path, options = {}) {
   });
 
   if (!res.ok) {
-    let detail = "";
+    let detail;
     try {
       detail = JSON.stringify(await res.json());
     } catch {
