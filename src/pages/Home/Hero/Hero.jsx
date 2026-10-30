@@ -261,7 +261,17 @@ function Hero() {
             </a>
             <a
               href="#consult"
-              className="inline-flex items-center gap-2 rounded-[10px] border border-[#e3e8e6] bg-white px-[26px] py-[14px] text-[15px] font-semibold text-[#0a1522] transition-colors duration-300 hover:border-[#16a34a]/40 hover:bg-[#f6faf7]"
+              onClick={(e) => {
+                e.preventDefault();
+                const target = document.getElementById("consult") || document.getElementById("blog");
+                if (target) {
+                  target.scrollIntoView({ behavior: "smooth" });
+                  if (window.history.pushState) {
+                    window.history.pushState(null, "", "#consult");
+                  }
+                }
+              }}
+              className="inline-flex items-center gap-2 rounded-[10px] border border-[#e3e8e6] bg-white px-[26px] py-[14px] text-[15px] font-semibold text-[#0a1522] transition-colors duration-300 hover:border-[#16a34a]/40 hover:bg-[#f6faf7] cursor-pointer"
             >
               Bepul konsultatsiya
             </a>

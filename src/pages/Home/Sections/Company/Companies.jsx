@@ -106,8 +106,18 @@ function Companies() {
                 <ArrowRight className="w-4 h-4" />
               </a>
               <a
-                href="#blog"
-                className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-6 py-3.5 text-sm font-semibold text-slate-800 transition-all duration-300 hover:bg-white hover:border-emerald-500 hover:text-emerald-600"
+                href="#consult"
+                onClick={(e) => {
+                  e.preventDefault();
+                  const target = document.getElementById("consult") || document.getElementById("blog");
+                  if (target) {
+                    target.scrollIntoView({ behavior: "smooth" });
+                    if (window.history.pushState) {
+                      window.history.pushState(null, "", "#consult");
+                    }
+                  }
+                }}
+                className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-6 py-3.5 text-sm font-semibold text-slate-800 transition-all duration-300 hover:bg-white hover:border-emerald-500 hover:text-emerald-600 cursor-pointer"
               >
                 Bepul konsultatsiya
               </a>

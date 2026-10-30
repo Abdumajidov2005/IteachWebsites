@@ -27,6 +27,9 @@ function Navbar({ onLogout }) {
       if (NAV_LINKS.some((l) => l.id === hashId)) {
         return hashId;
       }
+      if (hashId === "consult") {
+        return "blog";
+      }
     }
     return "";
   });
@@ -69,7 +72,9 @@ function Navbar({ onLogout }) {
       window.history.pushState(null, "", `#${targetId}`);
     }
 
-    const element = document.getElementById(targetId);
+    const element =
+      document.getElementById(targetId) ||
+      (targetId === "blog" ? document.getElementById("consult") : null);
     if (element) {
       element.scrollIntoView({ behavior: "smooth" });
     }
@@ -133,6 +138,8 @@ function Navbar({ onLogout }) {
       const hashId = window.location.hash.replace("#", "");
       if (NAV_LINKS.some((l) => l.id === hashId)) {
         setActiveSection(hashId);
+      } else if (hashId === "consult") {
+        setActiveSection("blog");
       }
     };
 

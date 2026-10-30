@@ -53,7 +53,7 @@ function getCourseVisual(title = "") {
 }
 
 function scrollToSignup() {
-  const target = document.getElementById("blog");
+  const target = document.getElementById("consult") || document.getElementById("blog");
   if (target) {
     target.scrollIntoView({ behavior: "smooth", block: "start" });
   }
